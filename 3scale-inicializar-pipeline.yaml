@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-inicializar-pipeline
+  namespace: 3scale-pipelines
+spec:
+  params:
+    - name: PIPELINE_NAME
+      type: string
+  steps:
+    - computeResources: {}
+      image: 'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:5209058488eb3693edfc113b96e65127238ae2d766b78a36bc55d043860a6481'
+      name: ocp4
+      script: |
+
+        # Verifica se a pasta já existe e a remove
+        if [ -d "/workspace/source/git-scr01" ]; then
+          rm -rf /workspace/source/git-scr01
+          echo "Diretório existente /workspace/source/git-scr01 removido."
+        fi
+        mkdir /workspace/source/git-scr01 
+
+        cd /workspace/source/git-scr01
+        PWD_VALUE=$(oc get secret/gitlab-credentials -o jsonpath='{.data.password}' | base64 -d)
+        USERNAME_VALUE=$(oc get secret/gitlab-credentials -o jsonpath='{.data.username}' | base64 -d)
+        EMAIL_VALUE=$(oc get secret/gitlab-credentials -o jsonpath='{.data.email}' | base64 -d)
+        echo $USERNAME_VALUE > gitlab-username
+        echo $EMAIL_VALUE > gitlab-email
+        pwd  
+        ls 
+         
+  workspaces:
+    - name: source
+    - description: An optional workspace that allows providing a .docker/config.json file for Buildah to access the container registry. The file should be placed at the root of the Workspace with name config.json or .dockerconfigjson.
+      name: dockerconfig
+      optional: true

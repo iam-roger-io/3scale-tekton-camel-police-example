@@ -1,0 +1,34 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-maven-package
+  namespace: 3scale-pipelines
+spec:
+  params:
+    - name: SOURCE_CODE_FOLDER
+      type: string
+  results:
+    - description: Artifact id version from pom.xml file
+      name: ARTIFACT_ID_VERSION
+      type: string
+  stepTemplate:
+    computeResources: {}
+  steps:
+    - computeResources: {}
+      image: 'maven:3.6.3-adoptopenjdk-11'
+      name: maven-package
+      script: |
+        #!/usr/bin/env bash 
+        cd /workspace/source
+        #export MAVEN_OPTS="-Dhttp.proxyHost=10.215.39.5 -Dhttp.proxyPort=8080 -Dhttps.proxyHost=10.215.39.5 -Dhttps.proxyPort=8080"
+        cd /workspace/source/$(params.SOURCE_CODE_FOLDER)
+        ARTIFACT_ID_VERSION=$(mvn -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec -q)   
+        ARTIFACT_ID_VERSION=$(echo ${ARTIFACT_ID_VERSION} | tr -dc '[:print:]') 
+        echo $ARTIFACT_ID_VERSION | tee $(results.ARTIFACT_ID_VERSION.path)
+        echo ARTIFACT_ID_VERSION "|"$ARTIFACT_ID_VERSION"|"
+        echo $ARTIFACT_ID_VERSION > $(workspaces.source.path)/artifact-id
+        echo "Repository" echo $(workspaces.maven-settings.path)
+        mvn package -Dmaven.repo.local=$(workspaces.maven-settings.path)/.m2 -Dmaven.test.skip=true
+  workspaces:
+    - name: source
+    - name: maven-settings

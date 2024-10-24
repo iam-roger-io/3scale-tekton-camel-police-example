@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-finalizar-pipeline
+  namespace: 3scale-pipelines
+spec:
+  params:
+    - name: SOURCE_CODE_FOLDER
+      type: string
+  steps:
+    - computeResources: {}
+      image: registry.redhat.io/ubi7/ubi-minimal
+      name: clear-pvc
+      script: |
+        #!/usr/bin/env bash
+
+        echo "### Limpando PVC"
+        echo "Apagando pasta /workspace/source/$(params.SOURCE_CODE_FOLDER)"
+
+        rm -rfv /workspace/source/$(params.SOURCE_CODE_FOLDER)
+
+        rm -rfv /workspace/source/gitops
+  workspaces:
+    - name: source

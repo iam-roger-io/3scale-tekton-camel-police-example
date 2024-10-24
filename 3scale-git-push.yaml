@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-git-push
+  namespace: 3scale-pipelines
+spec:
+  params:
+    - name: GITOPS_FOLDER
+      type: string
+    - name: BRANCH
+      type: string
+  steps:
+    - computeResources: {}
+      image: 'docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f'
+      name: git-push-gitops
+      script: |
+
+        echo "iniciando"
+
+        USER_NAME=$(cat /tekton/creds-secrets/gitlab-credentials/username)
+
+        ls -laht /workspace/source
+        cd /workspace/source/"$(params.GITOPS_FOLDER)"
+        ls -la
+        git config --global --add safe.directory /workspace/source/gitops
+        git config --global user.email "$USER_NAME@$USER_NAME.com.br"
+        git config --global user.name "$USER_NAME"
+        git fetch
+        git checkout $(params.BRANCH)
+        git pull
+        git add .
+        git commit -m "Openshift Pipelines - Updating image version."
+        git push
+  workspaces:
+    - name: source

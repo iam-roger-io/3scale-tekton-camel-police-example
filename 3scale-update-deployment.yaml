@@ -1,0 +1,34 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-update-deployment
+  namespace: 3scale-pipelines
+spec:
+  params:
+    - name: IMAGE
+      type: string
+    - name: SOURCE_CODE_FOLDER
+      type: string
+  steps:
+    - computeResources: {}
+      image: 'quay.apps.mgmt.tdigital-vivo.com.br/redhat/openjdk-11-tools:1.0'
+      name: update-gitops-files
+      script: |
+        #!/usr/bin/env bash
+
+        IMAGE_URL="$(inputs.params.IMAGE)"
+
+        echo "IMAGE_URL: |"$IMAGE_URL"|" 
+        IMAGE_URL="${IMAGE_URL//[$'\t\r\n ']}" 
+
+
+        echo "IMAGE_URL: |"$IMAGE_URL"|"
+        cd /workspace/source/$(inputs.params.SOURCE_CODE_FOLDER) 
+
+        pwd
+
+        IMAGE_URL=$IMAGE_URL yq -i '.spec.template.spec.containers[].image = strenv(IMAGE_URL)' ./openshift/deployment.yml
+         
+        cat  ./openshift/deployment.yml
+  workspaces:
+    - name: source

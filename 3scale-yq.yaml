@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: 3scale-yq
+  namespace: 3scale-pipelines
+spec:
+  description: This task can be used to replace fields in YAML files. For example for altering helm charts on GitOps repos.
+  params:
+    - default: ''
+      description: The yq script to execute. Can be multiple lines for complex tasks.
+      name: SCRIPT
+      type: string
+    - default: 'quay.apps.mgmt.tdigital-vivo.com.br/redhat/openjdk-11-tools:1.0'
+      description: The yq image to use.
+      name: image
+      type: string
+    - default: []
+      description: '(deprecated, use SCRIPT instead) A list of files to execute the expression on. Needs to be relative to the source workspace.'
+      name: files
+      type: array
+  results:
+    - description: The result from your yq command. You can write to it using `$(results.yq.path)`
+      name: yq
+      type: string
+  steps:
+    - args:
+        - '$(params.files[*])'
+      computeResources: {}
+      image: $(params.image)
+      name: yq-script
+      script: |
+        /usr/bin/env sh
+        set -e
+
+        # For backwards compatibility with previous versions
+        if [ "$(params.SCRIPT)" = "" ]; then
+          for var in "$@"
+          do
+              /usr/bin/yq eval -i  "$var"
+          done
+          exit $?
+        fi
+
+        $(params.SCRIPT)
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - description: A workspace that contains the file which needs to be altered.
+      name: source
