@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: 3scale-update-deployment
-  namespace: 3scale-pipelines
 spec:
   params:
     - name: IMAGE

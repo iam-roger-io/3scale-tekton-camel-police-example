@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: 3scale-inicializar-pipeline
-  namespace: 3scale-pipelines
 spec:
   params:
     - name: PIPELINE_NAME

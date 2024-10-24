@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: 3scale-git-push
-  namespace: 3scale-pipelines
 spec:
   params:
     - name: GITOPS_FOLDER

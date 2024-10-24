@@ -6,7 +6,6 @@ metadata:
     operator.tekton.dev/operand-name: openshift-pipelines-addons
     operator.tekton.dev/provider-type: redhat
   name: 3scale-git-clone
-  namespace: 3scale-pipelines
 spec:
   description: |-
     These Tasks are Git tasks to work with repositories used by other tasks in your Pipeline.

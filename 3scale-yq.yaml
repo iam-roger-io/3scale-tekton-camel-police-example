@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: 3scale-yq
-  namespace: 3scale-pipelines
 spec:
   description: This task can be used to replace fields in YAML files. For example for altering helm charts on GitOps repos.
   params:

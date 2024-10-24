@@ -4,7 +4,6 @@ metadata:
   labels:
     app.kubernetes.io/version: '0.4'
   name: 3scale-build-image
-  namespace: 3scale-pipelines
 spec:
   description: |-
     Buildah task builds source into a container image and then pushes it to a container registry.
