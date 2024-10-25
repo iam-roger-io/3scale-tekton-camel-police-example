@@ -6,6 +6,7 @@ GITLAB_GITOPS_GROUP="https://gitlab.com/3scale-gitops/policy-camel"
 GITLAB_SOURCE_CODE_GROUP="https://gitlab.com/3scale2_source"
 GITLAB_BRANCH="main"  # Valor padrão para o branch
 QUAY_URL="quay.io/iam_roger_io"  # URL padrão do Quay
+PVC_STORAGE=0  # Valor padrão para o PVC
 
 # Tratamento de parâmetros
 while [[ "$#" -gt 0 ]]; do
@@ -15,15 +16,16 @@ while [[ "$#" -gt 0 ]]; do
         --gitlab-source-code-group) GITLAB_SOURCE_CODE_GROUP="$2"; shift ;;
         --gitlab-branch) GITLAB_BRANCH="$2"; shift ;;  # Novo parâmetro para o branch
         --quay-url) QUAY_URL="$2"; shift ;;  # Novo parâmetro para a URL do Quay
+        --pvc) PVC_STORAGE="$2"; shift ;;  # Novo parâmetro para o PVC
         *) echo "Parâmetro desconhecido: $1"; exit 1 ;;
     esac
     shift
 done
 
 # Nome do arquivo a ser gerado
-OUTPUT_FILE="../pipelines/deploy-${PIPELINE_NAME}-policy-ci.yaml"
+OUTPUT_FILE="./deploy-${PIPELINE_NAME}-policy-ci.yaml"
 
-# Geração do arquivo YAML
+# Geração do arquivo YAML da pipeline
 cat <<EOF > "$OUTPUT_FILE"
 apiVersion: tekton.dev/v1
 kind: Pipeline
@@ -51,7 +53,7 @@ spec:
       description: Nome da imagem
       name: IMAGE_NAME
       type: string
-    - default: '${GITLAB_BRANCH}'  # Usando o novo parâmetro para o branch
+    - default: '${GITLAB_BRANCH}'
       description: Nome da branch
       name: SOURCE_CODE_BRANCH
       type: string
@@ -63,7 +65,7 @@ spec:
       description: URL do repositório de gitops
       name: GITOPS_REPOSITORY
       type: string
-    - default: '${GITLAB_BRANCH}'  # Usando o novo parâmetro para o branch de gitops
+    - default: '${GITLAB_BRANCH}'
       description: Nome da branch de gitops
       name: GITOPS_BRANCH
       type: string
@@ -258,3 +260,21 @@ spec:
 EOF
 
 echo "Arquivo $OUTPUT_FILE gerado com sucesso!"
+
+# Se o parâmetro --pvc foi fornecido, gera o arquivo pvc.yaml
+if [[ "$PVC_STORAGE" -gt 0 ]]; then
+    cat <<EOF > pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${PIPELINE_NAME}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: ${PVC_STORAGE}Gi
+EOF
+    echo "Arquivo pvc.yaml gerado com sucesso!"
+fi
