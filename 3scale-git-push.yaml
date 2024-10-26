@@ -16,13 +16,14 @@ spec:
 
         echo "iniciando"
 
+        USER_EMAIL=$(cat /tekton/creds-secrets/gitlab-credentials/email)
         USER_NAME=$(cat /tekton/creds-secrets/gitlab-credentials/username)
 
         ls -laht /workspace/source
         cd /workspace/source/"$(params.GITOPS_FOLDER)"
         ls -la
         git config --global --add safe.directory /workspace/source/gitops
-        git config --global user.email "$USER_NAME@$USER_NAME.com.br"
+        git config --global user.email "$USER_EMAIL"
         git config --global user.name "$USER_NAME"
         git fetch
         git checkout $(params.BRANCH)
